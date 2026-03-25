@@ -5,10 +5,16 @@ from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "calibrated_xgb.pkl"
+TEMPLATE_PATH = BASE_DIR / "patient_template.pkl"
 
-model = joblib.load(BASE_DIR / "calibrated_xgb.pkl")
-template = joblib.load(BASE_DIR / "patient_template.pkl")
+@st.cache_resource
+def load_assets():
+    model = joblib.load(MODEL_PATH)
+    template = joblib.load(TEMPLATE_PATH)
+    return model, template
 
+model, template = load_assets()
 
 st.title("30-Day Readmission Risk Calculator")
 
