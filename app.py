@@ -10,7 +10,9 @@ template = joblib.load(BASE_DIR / "/Users/stephenbracco/Projects/Diabetes/patien
 
 st.title("30-Day Readmission Risk Calculator")
 
-age = st.selectbox("Age", ["0-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80-89", "90-99"])
+
+age = st.text_input("Age")
+age = None if age.strip() == "" else age.strip()
 admission_type = st.selectbox("Admission Type", ["Emergency", "Urgent", "Elective"])
 time_in_hospital = st.slider("Time in Hospital (Days)", 0, 14, 7)
 num_medications = st.slider("Number of Medications", 0, 40, 20)
@@ -22,13 +24,17 @@ num_procedures = st.slider("Procedures (Not Including Lab Tests)", 0, 6, 3)
 number_outpatient = st.slider("Outpatient Visits", 0, 10, 5)
 
 insulin = st.selectbox("Insulin", ["No", "Steady", "Up", "Down"])
-a1c = st.selectbox("A1C (Blood Sugar) Result", ["None", "Normal", ">7", ">8"])
+a1c = st.selectbox("A1C (Blood Sugar) Result", ["None", "Normal (<7%)", ">7%", ">8%"])
 change = st.selectbox("Medication Change", ["No Change", "Change"])
-diabetes_med = st.selectbox("Diabetes Medication", ["No", "Yes"])
+diabetes_med = st.selectbox("Diabetes Medication Change", ["No Change", "Change"])
 
-diag_1 = st.text_input("Primary Diagnosis Code", "428")
-diag_2 = st.text_input("Secondary Diagnosis Code", "250")
-diag_3 = st.text_input("Tertiary Diagnosis Code", "276")
+diag_1 = st.text_input("Primary Diagnosis Code", placeholder="Leave blank if none")
+diag_2 = st.text_input("Secondary Diagnosis Code", placeholder="Leave blank if none")
+diag_3 = st.text_input("Tertiary Diagnosis Code", placeholder="Leave blank if none")
+
+diag_1 = None if diag_1.strip() == "" else diag_1.strip()
+diag_2 = None if diag_2.strip() == "" else diag_2.strip()
+diag_3 = None if diag_3.strip() == "" else diag_3.strip()
 
 if st.button("Predict Readmission Risk"):
     patient = template.copy()
