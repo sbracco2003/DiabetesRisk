@@ -3,10 +3,12 @@ import pandas as pd
 import joblib
 from pathlib import Path
 
-BASE_DIR = Path().resolve().parent
 
-model = joblib.load(BASE_DIR / "/Users/stephenbracco/Projects/Diabetes/calibrated_xgb.pkl")
-template = joblib.load(BASE_DIR / "/Users/stephenbracco/Projects/Diabetes/patient_template.pkl")
+BASE_DIR = Path(__file__).resolve().parent
+
+model = joblib.load(BASE_DIR / "calibrated_xgb.pkl")
+template = joblib.load(BASE_DIR / "patient_template.pkl")
+
 
 st.title("30-Day Readmission Risk Calculator")
 
@@ -23,8 +25,8 @@ num_lab_procedures = st.slider("Lab Tests", 0, 150, 75)
 num_procedures = st.slider("Procedures (Not Including Lab Tests)", 0, 6, 3)
 number_outpatient = st.slider("Outpatient Visits", 0, 10, 5)
 
-insulin = st.selectbox("Insulin", ["No", "Steady", "Up", "Down"])
-a1c = st.selectbox("A1C (Blood Sugar) Result", ["None", "Normal (<7%)", ">7%", ">8%"])
+insulin = st.selectbox("Insulin Dosage", ["Steady (No Change)", "Increased", "Decreased", "N/A"])
+a1c = st.selectbox("A1C (Blood Sugar) Result", ["Normal (<7%)", ">7%", ">8%", "None"])
 change = st.selectbox("Medication Change", ["No Change", "Change"])
 diabetes_med = st.selectbox("Diabetes Medication Change", ["No Change", "Change"])
 
