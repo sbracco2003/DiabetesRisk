@@ -1,16 +1,35 @@
 # Predicting 30-Day Hospital Readmissions with Machine Learning
 
-## Overview
-Hospital readmissions are costly and often preventable. This project builds and interprets machine learning models to predict whether a diabetic patient will be readmitted within 30 days of discharge using the Diabetes 130-US hospitals dataset.
 
-The project compares an interpretable baseline model (logistic regression) against a nonlinear model (XGBoost), then evaluates risk concentration, calibration, feature importance, and subgroup behavior.
+## Live App (Diabetes Readmission Risk Calculator)
+https://diabetesrisk-xln3ockx8x8zo9mvqbybti.streamlit.app/
+
+The deployed Streamlit app allows users to:
+
+- input patient characteristics
+- receive calibrated readmission probability
+- classify risk (low / moderate / high)
+
+This simulates a real-world clinical decision support tool.
+
+## Overview
+Hospital readmissions are costly and often preventable. This project builds a machine learning model to predict 30-day readmission risk for diabetic patients, enabling hospitals to identify high-risk individuals and intervene early. 
+
+The project integrates:
+
+- predictive modeling (Logistic Regression, Random Forest, XGBoost)
+- probability calibration
+- interpretability (SHAP)
+- business-focused evaluation (lift & gains)
+- a deployed interactive Streamlit application
 
 ## Business / Clinical Question
 Can hospitals identify a manageable subset of high-risk patients for post-discharge intervention programs such as follow-up calls, medication reconciliation, and care coordination?
 
 ## Dataset
-- Source: Diabetes 130-US hospitals dataset
+- Source: Diabetes 130-US hospitals dataset (https://www.kaggle.com/datasets/brandao/diabetes?select=diabetic_data.csv)
 - Population: Hospital encounters for diabetic patients across 130 U.S. hospitals
+- Size: About 110,000 rows of unique patient data
 - Target: Readmitted within 30 days
 - Feature types:
   - demographics
@@ -18,7 +37,7 @@ Can hospitals identify a manageable subset of high-risk patients for post-discha
   - medication and treatment history
   - prior healthcare utilization
 
-## Methods
+# Methods
 ### Preprocessing
 - handled missing values
 - one-hot encoded categorical variables
@@ -27,7 +46,23 @@ Can hospitals identify a manageable subset of high-risk patients for post-discha
 
 ### Models
 - Logistic Regression (L1-regularized baseline)
-- XGBoost (nonlinear model)
+- Random Forest (nonlinear benchmark)
+- XGBoost (final model)
+
+```python
+from sklearn.pipeline import Pipeline 
+clf = Pipeline([ ("preprocess", preprocessor), 
+      ("model", XGBClassifier(scale_pos_weight=class_weight)) 
+      ])
+```
+### Probability Calibration 
+```python
+from sklearn.calibration import CalibratedClassifierCV
+
+calibrated_xgb = CalibratedClassifierCV(xgb_model, method="sigmoid", cv=3)
+calibrated_xgb.fit(X_train, y_train)
+```
+Calibration was applied to ensure predicted probabilities are reliable and interpretable for real-world use.
 
 ### Evaluation Metrics
 Because 30-day readmission is an imbalanced outcome, I focused on:
@@ -41,12 +76,28 @@ Because 30-day readmission is an imbalanced outcome, I focused on:
 | Model | ROC-AUC | PR-AUC |
 |------|---------|--------|
 | Logistic Regression | ~0.653 | ~0.208 |
-| XGBoost | **0.676** | **0.228** |
+| Random Forest | ~0.663 | ~0.207|
+| XGBoost | ***~0.676*** | ***~0.228*** |
 
+![PR Curve](images/pr_curve.png)
+
+### Key Performance Metrics
+- ROC-AUC (XGBoost): 0.676 (95% CI: 0.665–0.688)
+  - The confidence interval indicates that, across repeated samples, the model’s true ROC-AUC would likely fall between 0.665 and 0.688, demonstrating stable and consistent
+    performance.
+- PR-AUC (XGBoost): ~0.228
+  - More informative than ROC-AUC for this imbalanced problem (~11% positives).
+- Base readmission rate: 
+  - This is the actual proportion of patients readmitted within 30 days in the dataset (i.e., the unconditional probability of readmission).
+- Mean predicted probability (calibrated): ~0.111
+  - After calibration, the model’s average predicted risk closely matches the true readmission rate (~11.2%), indicating that predicted probabilities are well-calibrated and
+    interpretable.
+  
 ### Key Findings
-- XGBoost outperformed logistic regression, suggesting important nonlinear interactions in the data.
-- Prior inpatient utilization was the strongest predictor of readmission risk.
-- Patients with no prior inpatient admissions had predicted readmission risk around 9%, while patients with 10+ prior admissions exceeded 35%.
+- XGBoost outperformed both logistic regression and random forest, indicating meaningful nonlinear relationships in patient risk factors.
+- Prior inpatient utilization is the strongest predictor of readmission risk.
+  - Patients with 0 prior inpatient visits: ~9% risk
+  - Patients with 10+ prior visits: >35% risk
 - Using a 15% probability threshold flagged about 20% of patients as high risk.
 - The top risk decile had about **2.35x** the average readmission rate.
 - Targeting the top 20% highest-risk patients captured about **35%** of all readmissions.
@@ -60,6 +111,16 @@ Model interpretation with SHAP and partial dependence plots showed that the most
 - number of diagnoses
 
 These patterns indicate that readmission risk is driven more by prior healthcare utilization and disease burden than by any single diagnosis alone.
+
+
+##Model/Calculator Application
+The model enables hospitals to prioritize a small subset of high-risk patients for targeted interventions such as:
+
+- discharge planning
+- follow-up care coordination
+- medication management
+
+By focusing on the top risk segments, hospitals can capture a disproportionate share of preventable readmissions while optimizing resource allocation.
 
 ## Fairness Check
 Average predicted risk was broadly similar across race and gender groups, suggesting no major disparities in average model output.
@@ -85,7 +146,6 @@ This corresponds to approximately **5.5x higher odds** of readmission for the hi
 - add more robust subgroup fairness metrics
 - test alternative calibration approaches
 - group diagnosis codes into broader clinical categories
-- deploy a lightweight risk calculator interface
 
 ## Project Structure
 ```text
