@@ -79,7 +79,7 @@ Because 30-day readmission is an imbalanced outcome, I focused on:
 | Random Forest | ~0.663 | ~0.207|
 | XGBoost | ***~0.676*** | ***~0.228*** |
 
-![PR Curve](images/pr_curve.png)
+![PR Curve](pr-comparison.png)
 
 ### Key Performance Metrics
 - ROC-AUC (XGBoost): 0.676 (95% CI: 0.665–0.688)
@@ -92,6 +92,9 @@ Because 30-day readmission is an imbalanced outcome, I focused on:
 - Mean predicted probability (calibrated): ~0.111
   - After calibration, the model’s average predicted risk closely matches the true readmission rate (~11.2%), indicating that predicted probabilities are well-calibrated and
     interpretable.
+- Top decile lift ≈ 2.3× vs random selection
+
+![Lift Chart](liftcurve.png)
   
 ### Key Findings
 - XGBoost outperformed both logistic regression and random forest, indicating meaningful nonlinear relationships in patient risk factors.
@@ -113,7 +116,7 @@ Model interpretation with SHAP and partial dependence plots showed that the most
 These patterns indicate that readmission risk is driven more by prior healthcare utilization and disease burden than by any single diagnosis alone.
 
 
-##Model/Calculator Application
+## Model/Calculator Application
 The model enables hospitals to prioritize a small subset of high-risk patients for targeted interventions such as:
 
 - discharge planning
