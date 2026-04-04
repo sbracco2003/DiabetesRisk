@@ -1,7 +1,7 @@
 # Predicting 30-Day Hospital Readmissions with Machine Learning
 
 
-## Live App (Diabetes Readmission Risk Calculator)
+## Live App (may take ~15 seconds to load on first visit)
 https://diabetesrisk-xln3ockx8x8zo9mvqbybti.streamlit.app/
 
 The deployed Streamlit app allows users to:
@@ -47,19 +47,43 @@ Can hospitals identify a manageable subset of high-risk patients for post-discha
 ### Models
 - Logistic Regression (L1-regularized baseline)
 - Random Forest (nonlinear benchmark)
-- XGBoost (final model)
+- **XGBoost (final model)**
 
 ```python
-from sklearn.pipeline import Pipeline 
-clf = Pipeline([ ("preprocess", preprocessor), 
-      ("model", XGBClassifier(scale_pos_weight=class_weight)) 
-      ])
+from xgboost import XGBClassifier
+
+xgb = XGBClassifier(
+    n_estimators=300,
+    max_depth=4,
+    learning_rate=0.05,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    scale_pos_weight=(y_train == 0).sum() / (y_train == 1).sum(),
+    eval_metric="logloss",
+    random_state=42,
+    n_jobs=-1
+)
+
+xgb_pipe = Pipeline(steps=[
+    ("preprocess", preprocess),
+    ("model", xgb)
+])
+
+xgb_pipe.fit(X_train, y_train)
 ```
 ### Probability Calibration 
 ```python
 from sklearn.calibration import CalibratedClassifierCV
 
-calibrated_xgb = CalibratedClassifierCV(xgb_model, method="sigmoid", cv=3)
+# Take the fitted xgb_pipe's model definition (not fitted probabilities)
+xgb_uncal = xgb_pipe  
+
+calibrated_xgb = CalibratedClassifierCV(
+    estimator=xgb_uncal,
+    method="isotonic",   
+    cv=3                
+)
+
 calibrated_xgb.fit(X_train, y_train)
 ```
 Calibration was applied to ensure predicted probabilities are reliable and interpretable for real-world use.
