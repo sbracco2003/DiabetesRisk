@@ -75,7 +75,7 @@ xgb_pipe.fit(X_train, y_train)
 ```python
 from sklearn.calibration import CalibratedClassifierCV
 
-# Take the fitted xgb_pipe's model definition (not fitted probabilities)
+# Calibration is applied to ensure predicted probabilities are reliable and interpretable for real-world use.
 xgb_uncal = xgb_pipe  
 
 calibrated_xgb = CalibratedClassifierCV(
@@ -86,7 +86,6 @@ calibrated_xgb = CalibratedClassifierCV(
 
 calibrated_xgb.fit(X_train, y_train)
 ```
-Calibration was applied to ensure predicted probabilities are reliable and interpretable for real-world use.
 
 ### Evaluation Metrics
 Because 30-day readmission is an imbalanced outcome, I focused on:
