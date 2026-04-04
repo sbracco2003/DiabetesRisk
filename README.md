@@ -102,22 +102,22 @@ Because 30-day readmission is an imbalanced outcome, I focused on:
 | Random Forest | ~0.663 | ~0.207|
 | XGBoost | ***~0.676*** | ***~0.228*** |
 
-![PR Curve](pr-comparison.png)
+![PR Curve](Images/pr_comparison.png)
 
 ### Key Performance Metrics
 - ROC-AUC (XGBoost): 0.676 (95% CI: 0.665–0.688)
-  - The confidence interval indicates that, across repeated samples, the model’s true ROC-AUC would likely fall between 0.665 and 0.688, demonstrating stable and consistent
-    performance.
+  - The confidence interval indicates stable and consistent performance.
 - PR-AUC (XGBoost): ~0.228
-  - More informative than ROC-AUC for this imbalanced problem (~11% positives).
-- Base readmission rate: 
-  - This is the actual proportion of patients readmitted within 30 days in the dataset (i.e., the unconditional probability of readmission).
-- Mean predicted probability (calibrated): ~0.111
+  - More informative given class imabalance.
+- Mean predicted probability: ~0.111
   - After calibration, the model’s average predicted risk closely matches the true readmission rate (~11.2%), indicating that predicted probabilities are well-calibrated and
     interpretable.
-- Top decile lift ≈ 2.3× vs random selection
 
-![Lift Chart](liftcurve.png)
+![Lift Chart](Images/lift_curve.png)
+
+**Top decile lift ≈ 2.3× vs random selection**
+
+The lift chart evaluates how effectively the model concentrates readmission risk compared to random selection. The top 10% highest-risk patients show approximately 2.3× higher readmission rates than the overall population. This means the model is successfully identifying patients who are disproportionately likely to be readmitted.
   
 ### Key Findings
 - XGBoost outperformed both logistic regression and random forest, indicating meaningful nonlinear relationships in patient risk factors.
@@ -125,10 +125,12 @@ Because 30-day readmission is an imbalanced outcome, I focused on:
   - Patients with 0 prior inpatient visits: ~9% risk
   - Patients with 10+ prior visits: >35% risk
 - Using a 15% probability threshold flagged about 20% of patients as high risk.
-- The top risk decile had about **2.35x** the average readmission rate.
-- Targeting the top 20% highest-risk patients captured about **35%** of all readmissions.
+- Targeting the top 20% highest-risk patients captured about **35%** of all readmissions, enabling efficient intervention strategies.
 
 ## Interpretation
+
+![SHAP Chart](Images/shap.png)
+
 Model interpretation with SHAP and partial dependence plots showed that the most important predictors were:
 - number of prior inpatient visits
 - number of emergency visits
@@ -138,6 +140,12 @@ Model interpretation with SHAP and partial dependence plots showed that the most
 
 These patterns indicate that readmission risk is driven more by prior healthcare utilization and disease burden than by any single diagnosis alone.
 
+## Example Risk Profiles
+Using the calibrated XGBoost model:
+- Low-risk patient: **4.6%** predicted readmission probability
+- High-risk patient: **20.8%** predicted readmission probability
+
+This corresponds to approximately **5.5x higher odds** of readmission for the high-risk profile.
 
 ## Model/Calculator Application
 The model enables hospitals to prioritize a small subset of high-risk patients for targeted interventions such as:
@@ -150,13 +158,6 @@ By focusing on the top risk segments, hospitals can capture a disproportionate s
 
 ## Fairness Check
 Average predicted risk was broadly similar across race and gender groups, suggesting no major disparities in average model output.
-
-## Example Risk Profiles
-Using the calibrated XGBoost model:
-- Low-risk patient: **4.6%** predicted readmission probability
-- High-risk patient: **20.8%** predicted readmission probability
-
-This corresponds to approximately **5.5x higher odds** of readmission for the high-risk profile.
 
 ## Tools Used
 - Python
